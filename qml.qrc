@@ -4,7 +4,5 @@
         <file>images/black_pawn.svg</file>
         <file>images/white_pawn.svg</file>
         <file>images/chess_board.jpg</file>
-        <file>qml/game_screen.qml</file>
-        <file>qml/load_screen.qml</file>
     </qresource>
 </RCC>
