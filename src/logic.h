@@ -25,6 +25,8 @@ public:
     int boardSize() const;
 
     Q_INVOKABLE void clear();
+    Q_INVOKABLE void startNewGame();
+    Q_INVOKABLE void loadGame();
     Q_INVOKABLE bool move(int fromX, int fromY, int toX, int toY);
 
 protected:

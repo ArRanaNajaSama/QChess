@@ -32,10 +32,10 @@ int Logic::Impl::findByPosition(int x, int y) {
 
 Logic::Logic(QObject *parent)
   : QAbstractListModel(parent)
-  , impl(new Impl()) 
+  , impl(new Impl())
 {
-  impl->figures << Figure { 0, 0, 0 };
-  impl->figures << Figure { 1, 7, 7 };
+  //impl->figures << Figure { 0, 0, 0 };
+  //impl->figures << Figure { 1, 7, 7 };
 }
 
 Logic::~Logic() {
@@ -82,6 +82,22 @@ void Logic::clear() {
   beginResetModel();
   impl->figures.clear();
   endResetModel();
+}
+
+void Logic::startNewGame()
+{
+    beginInsertRows(QModelIndex(), 0, 7);
+    impl->figures << Figure { 0, 0, 0 };
+    impl->figures << Figure { 1, 7, 7 };
+    endInsertRows();
+}
+
+void Logic::loadGame()
+{
+    beginInsertRows(QModelIndex(), 0, 7);
+    impl->figures << Figure { 0, 0, 0 };
+    impl->figures << Figure { 1, 7, 7 };
+    endInsertRows();
 }
 
 bool Logic::move(int fromX, int fromY, int toX, int toY) {
