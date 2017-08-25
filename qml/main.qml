@@ -11,10 +11,26 @@ ApplicationWindow {
 
     property int squareSize: 70
 
-    property var images: [
-        {'imgPath' : "/images/white_pawn.svg"},
-        {'imgPath' : "/images/black_pawn.svg"},
-    ]
+    function getImgPath(color, type)
+    {
+
+        var imgPath = ""
+        switch (color)
+        {
+            case 0: imgPath += "/images/white"; break;
+            case 1: imgPath += "/images/black"; break;
+        }
+        switch (type)
+        {
+            case 0: imgPath += "_rook.svg"; break;
+            case 1: imgPath += "_knight.svg"; break;
+            case 2: imgPath += "_bishop.svg"; break;
+            case 3: imgPath += "_queen.svg"; break;
+            case 4: imgPath += "_king.svg"; break;
+            case 5: imgPath += "_pawn.svg"; break;
+        }
+        return imgPath
+    }
 
     Item {
         id: gameBoard
@@ -39,7 +55,7 @@ ApplicationWindow {
                 x: squareSize * positionX
                 y: squareSize * positionY
 
-                source: images[type].imgPath
+                source: getImgPath(color, type)
 
                 MouseArea {
                     anchors.fill: parent

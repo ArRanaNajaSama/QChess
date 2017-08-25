@@ -7,21 +7,40 @@ class Logic: public QAbstractListModel
     Q_OBJECT
 public:
 
+    enum FigureColor
+    {
+        WHITE,
+        BLACK
+    };
+
+    enum FigureType
+    {
+        ROOK,
+        KNIGHT,
+        BISHOP,
+        QUEEN,
+        KING,
+        PAWN
+    };
+
     enum GlobalConstants {
         BOARD_SIZE = 8
     };
 
     enum Roles {
-        Type = Qt::UserRole,
+        Color = Qt::UserRole,
+        Type,
         PositionX,
         PositionY,
     };
+
+
     
 public:
     explicit Logic(QObject *parent = 0);
     ~Logic();
 
-    Q_PROPERTY(int boardSize READ boardSize CONSTANT);
+    Q_PROPERTY(int boardSize READ boardSize CONSTANT)
     int boardSize() const;
 
     Q_INVOKABLE void clear();

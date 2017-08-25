@@ -6,11 +6,11 @@
 
 struct Figure
 {
-  int type;
+  Logic::FigureColor color;
+  Logic::FigureType type;
   int x;
   int y;
 };
-
 
 struct Logic::Impl
 {
@@ -30,13 +30,8 @@ int Logic::Impl::findByPosition(int x, int y) {
 }
 
 
-Logic::Logic(QObject *parent)
-  : QAbstractListModel(parent)
-  , impl(new Impl())
-{
-  //impl->figures << Figure { 0, 0, 0 };
-  //impl->figures << Figure { 1, 7, 7 };
-}
+Logic::Logic(QObject *parent):QAbstractListModel(parent), impl(new Impl())
+{}
 
 Logic::~Logic() {
 }
@@ -51,6 +46,7 @@ int Logic::rowCount(const QModelIndex & ) const {
 
 QHash<int, QByteArray> Logic::roleNames() const { 
   QHash<int, QByteArray> names;
+  names.insert(Roles::Color     , "color");
   names.insert(Roles::Type      , "type");
   names.insert(Roles::PositionX , "positionX");
   names.insert(Roles::PositionY , "positionY");
@@ -71,6 +67,7 @@ QVariant Logic::data(const QModelIndex & modelIndex, int role) const {
   Figure & figure = impl->figures[index];
     
   switch (role) {
+    case Roles::Color    : return figure.color;
     case Roles::Type     : return figure.type;
     case Roles::PositionX: return figure.x;
     case Roles::PositionY: return figure.y;
@@ -86,17 +83,55 @@ void Logic::clear() {
 
 void Logic::startNewGame()
 {
-    beginInsertRows(QModelIndex(), 0, 7);
-    impl->figures << Figure { 0, 0, 0 };
-    impl->figures << Figure { 1, 7, 7 };
+    beginInsertRows(QModelIndex(), 0, 31);
+    for (int i = 0; i < 8; i++)
+    {
+        impl->figures << Figure{WHITE, PAWN, i, 1 };
+        impl->figures << Figure{BLACK, PAWN, i, 6 };
+    }
+    impl->figures << Figure{WHITE, ROOK, 0, 0};
+    impl->figures << Figure{WHITE, KNIGHT, 1, 0};
+    impl->figures << Figure{WHITE, BISHOP, 2, 0};
+    impl->figures << Figure{WHITE, QUEEN, 3, 0};
+    impl->figures << Figure{WHITE, KING, 4, 0};
+    impl->figures << Figure{WHITE, BISHOP, 5, 0};
+    impl->figures << Figure{WHITE, KNIGHT, 6, 0};
+    impl->figures << Figure{WHITE, ROOK, 7, 0};
+    impl->figures << Figure{BLACK, ROOK, 0, 7};
+    impl->figures << Figure{BLACK, KNIGHT, 1, 7};
+    impl->figures << Figure{BLACK, BISHOP, 2, 7};
+    impl->figures << Figure{BLACK, QUEEN, 3, 7};
+    impl->figures << Figure{BLACK, KING, 4, 7};
+    impl->figures << Figure{BLACK, BISHOP, 5, 7};
+    impl->figures << Figure{BLACK, KNIGHT, 6, 7};
+    impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
 }
 
 void Logic::loadGame()
 {
-    beginInsertRows(QModelIndex(), 0, 7);
-    impl->figures << Figure { 0, 0, 0 };
-    impl->figures << Figure { 1, 7, 7 };
+    beginInsertRows(QModelIndex(), 0, 31);
+    for (int i = 0; i < 8; i++)
+    {
+        impl->figures << Figure{WHITE, PAWN, i, 1 };
+        impl->figures << Figure{BLACK, PAWN, i, 6 };
+    }
+    impl->figures << Figure{WHITE, ROOK, 0, 0};
+    impl->figures << Figure{WHITE, KNIGHT, 1, 0};
+    impl->figures << Figure{WHITE, BISHOP, 2, 0};
+    impl->figures << Figure{WHITE, QUEEN, 3, 0};
+    impl->figures << Figure{WHITE, KING, 4, 0};
+    impl->figures << Figure{WHITE, BISHOP, 5, 0};
+    impl->figures << Figure{WHITE, KNIGHT, 6, 0};
+    impl->figures << Figure{WHITE, ROOK, 7, 0};
+    impl->figures << Figure{BLACK, ROOK, 0, 7};
+    impl->figures << Figure{BLACK, KNIGHT, 1, 7};
+    impl->figures << Figure{BLACK, BISHOP, 2, 7};
+    impl->figures << Figure{BLACK, QUEEN, 3, 7};
+    impl->figures << Figure{BLACK, KING, 4, 7};
+    impl->figures << Figure{BLACK, BISHOP, 5, 7};
+    impl->figures << Figure{BLACK, KNIGHT, 6, 7};
+    impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
 }
 
