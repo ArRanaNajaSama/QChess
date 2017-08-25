@@ -3,6 +3,9 @@
 #include <QByteArray>
 #include <QHash>
 #include <iostream>
+#include <QFile>
+#include <QTextStream>
+#include <QDebug>
 
 struct Figure
 {
@@ -17,11 +20,15 @@ struct Logic::Impl
   QList<Figure> figures;
 
   int findByPosition(int x, int y);
+  int turn = 0;
 };
 
-int Logic::Impl::findByPosition(int x, int y) {
-  for (int i(0); i<figures.size(); ++i) {
-    if (figures[i].x != x || figures[i].y != y ) { 
+int Logic::Impl::findByPosition(int x, int y)
+{
+  for (int i(0); i<figures.size(); ++i)
+  {
+    if (figures[i].x != x || figures[i].y != y )
+    {
       continue; 
     }
     return i;    
@@ -33,18 +40,21 @@ int Logic::Impl::findByPosition(int x, int y) {
 Logic::Logic(QObject *parent):QAbstractListModel(parent), impl(new Impl())
 {}
 
-Logic::~Logic() {
-}
+Logic::~Logic()
+{}
 
-int Logic::boardSize() const {
+int Logic::boardSize() const
+{
   return BOARD_SIZE;
 }
 
-int Logic::rowCount(const QModelIndex & ) const {
+int Logic::rowCount(const QModelIndex & ) const
+{
   return impl->figures.size(); 
 }
 
-QHash<int, QByteArray> Logic::roleNames() const { 
+QHash<int, QByteArray> Logic::roleNames() const
+{
   QHash<int, QByteArray> names;
   names.insert(Roles::Color     , "color");
   names.insert(Roles::Type      , "type");
@@ -53,20 +63,24 @@ QHash<int, QByteArray> Logic::roleNames() const {
   return names;
 }
 
-QVariant Logic::data(const QModelIndex & modelIndex, int role) const { 
-  if (!modelIndex.isValid()) {
+QVariant Logic::data(const QModelIndex & modelIndex, int role) const
+{
+  if (!modelIndex.isValid())
+  {
     return QVariant();
   }
     
   int index = static_cast<int>(modelIndex.row());
   
-  if (index >= impl->figures.size() || index < 0) {
+  if (index >= impl->figures.size() || index < 0)
+  {
     return QVariant();
   }
 
   Figure & figure = impl->figures[index];
     
-  switch (role) {
+  switch (role)
+  {
     case Roles::Color    : return figure.color;
     case Roles::Type     : return figure.type;
     case Roles::PositionX: return figure.x;
@@ -75,7 +89,8 @@ QVariant Logic::data(const QModelIndex & modelIndex, int role) const {
   return QVariant(); 
 }
 
-void Logic::clear() {
+void Logic::clear()
+{
   beginResetModel();
   impl->figures.clear();
   endResetModel();
@@ -133,16 +148,50 @@ void Logic::loadGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
+
+    QFile file("out.txt");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "Load Game: Something went wrong....\n";
+        return;
+    }
+       QTextStream in(&file);
+//       QString line = in.readLine();
+//       while (!line.isNull())
+//       {
+//           process_line(line);
+//           line = in.readLine();
+//       }
 }
 
-bool Logic::move(int fromX, int fromY, int toX, int toY) {
+void Logic::saveGame()
+{
+    QFile file("out.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        qDebug() << "Save Game: Something went wrong....\n";
+        return;
+    }
+    QTextStream out(&file);
+    out << "The magic number is: " << 49 << "\n";
+}
+
+bool Logic::move(int fromX, int fromY, int toX, int toY)
+{
   int index = impl->findByPosition(fromX, fromY);
+  qDebug() << index;
 
   if (index < 0) return false;
-  
-  if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE || impl->findByPosition(toX, toY) >= 0) {
+
+  if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE || impl->findByPosition(toX, toY) >= 0)
+  {
     return false;
   }
+  if (impl->turn%2 != impl->figures[index].color)
+  {
+      return false;
+  }
+  impl->turn++;
   impl->figures[index].x = toX;
   impl->figures[index].y = toY;
   QModelIndex topLeft = createIndex(index, 0);
