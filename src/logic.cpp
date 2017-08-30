@@ -73,9 +73,6 @@ bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int to
     qDebug() << "checkMove: Current figure" << figure.type;
     switch (figure.type)
     {
-    case PAWN:
-        return(checkPawnMove(figure.color, fromX, fromY, toX, toY));
-        break;
     case ROOK:
         return(checkRookMove(fromX, fromY, toX, toY));
         break;
@@ -89,7 +86,10 @@ bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int to
         return (checkQueenMove(fromX, fromY, toX, toY));
         break;
     case KING:
-        return true;
+        return (checkKingMove(fromX, fromY, toX, toY));
+        break;
+    case PAWN:
+        return(checkPawnMove(figure.color, fromX, fromY, toX, toY));
         break;
     default:
         return false;
@@ -127,7 +127,6 @@ bool::Logic::Impl::checkRookMove(int fromX, int fromY, int toX, int toY)
 
 bool::Logic::Impl::checkKnightMove(int fromX, int fromY, int toX, int toY)
 {
-    //KNIGHT
     //The knight moves forms an "L"-shape:
     //two squares vertically and one square horizontally,
     //or two squares horizontally and one square vertically.
@@ -144,7 +143,7 @@ bool::Logic::Impl::checkBishopMove(int fromX, int fromY, int toX, int toY)
     //The bishop can move any number of squares diagonally,
     //but cannot leap over other pieces.
     bool overleap = checkOverleap(fromX, fromY, toX, toY);
-    if(abs(fromX - toX) == abs(fromY - toY) && !overleap)
+    if((abs(fromX - toX) == abs(fromY - toY)) && !overleap)
         return true;
     return false;
 }
@@ -153,11 +152,21 @@ bool::Logic::Impl::checkQueenMove(int fromX, int fromY, int toX, int toY)
 {
     bool overleap = checkOverleap(fromX, fromY, toX, toY);
     //Queen's diagonal move
-    if(abs(fromX - toX) == abs(fromY - toY) && !overleap)
+    if((abs(fromX - toX) == abs(fromY - toY)) && !overleap)
         return true;
-    else if (abs(fromY - toY) < 1 && !overleap) // Horizontal move
+    else if ((abs(fromY - toY) < 1) && !overleap) // Horizontal move
         return true;
-    else if (abs(fromX - toX) < 1 && !overleap) // Vertical move
+    else if ((abs(fromX - toX) < 1) && !overleap) // Vertical move
+        return true;
+    return false;
+}
+
+bool::Logic::Impl::checkKingMove(int fromX, int fromY, int toX, int toY)
+{
+    //The king moves one square in any direction.
+    if(abs(fromX - toX) < 1 && abs(fromY - toY) == 1)
+        return true;
+    else if(abs(fromY - toY) < 1 && abs(fromX - toX) == 1)
         return true;
     return false;
 }
@@ -349,8 +358,8 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
         if (impl->figures[index].color == impl->figures[nextIndex].color)
             return false;
         qDebug() << "Attack!";
-        impl->figures.removeAt(nextIndex);
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
+        impl->figures.removeAt(nextIndex);
         endRemoveRows();
         index = impl->findByPosition(fromX, fromY);
     }
