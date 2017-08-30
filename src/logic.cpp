@@ -34,6 +34,7 @@ struct Logic::Impl
     bool checkPawnMove(int color, int fromX, int fromY, int toX, int toY);
     bool checkOverleap(int fromX, int fromY, int toX, int toY);
     bool checkRookMove(int fromX, int fromY, int toX, int toY);
+    bool checkKnightMove(int fromX, int fromY, int toX, int toY);
 };
 
 int Logic::Impl::findByPosition(int x, int y)
@@ -75,7 +76,9 @@ bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int to
     case ROOK:
         return(checkRookMove(fromX, fromY, toX, toY));
         break;
-
+    case KNIGHT:
+        return (checkKnightMove(fromX, fromY, toX, toY));
+        break;
     default:
         return false;
         break;
@@ -107,6 +110,20 @@ bool::Logic::Impl::checkRookMove(int fromX, int fromY, int toX, int toY)
     if (abs(fromY - toY) < 1 && !overleap)
         return true;
     else if (abs(fromX - toX) < 1 && !overleap)
+        return true;
+    return false;
+}
+
+bool::Logic::Impl::checkKnightMove(int fromX, int fromY, int toX, int toY)
+{
+    //KNIGHT
+    //The knight moves forms an "L"-shape:
+    //two squares vertically and one square horizontally,
+    //or two squares horizontally and one square vertically.
+    //The knight is the only piece that can leap over other pieces.
+    if (abs(fromX - toX) == 2 && abs(fromY - toY) == 1)
+        return true;
+    if (abs(fromX - toX) == 1 && abs(fromY - toY) == 2)
         return true;
     return false;
 }
@@ -155,7 +172,7 @@ QVariant Logic::data(const QModelIndex & modelIndex, int role) const
     {
         return QVariant();
     }
-    
+
     int index = static_cast<int>(modelIndex.row());
 
     if (index >= impl->figures.size() || index < 0)
@@ -164,7 +181,7 @@ QVariant Logic::data(const QModelIndex & modelIndex, int role) const
     }
 
     Figure & figure = impl->figures[index];
-    
+
     switch (role)
     {
     case Roles::Color    : return figure.color;
@@ -285,7 +302,11 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE)
         return false;
     if ((impl->turn % 2) != impl->figures[index].color)
+    {
+        qDebug() << "(impl->turn % 2)" << (impl->turn % 2);
+        qDebug() << "impl->figures[index].color" << impl->figures[index].color;
         return false;
+    }
     int  nextIndex = impl->findByPosition(toX, toY);
     qDebug() << "nextIndex" << nextIndex;
     if (index == nextIndex)
