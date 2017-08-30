@@ -51,33 +51,16 @@ int Logic::Impl::findByPosition(int x, int y)
 
 bool::Logic::Impl::checkOverleap(int fromX, int fromY, int toX, int toY)
 {
-    int stepX = abs(fromX - toX);
-    int stepY = abs(fromY - toY);
-    int figIndex = findByPosition(fromX, fromY);
-
-    qDebug() << "stepX" << stepX << ">" << "stepY" << stepY;
-    qDebug() << "figIndex" << figIndex;
-
-    int pathSum = 0;
-    QVector<int> cells;
-
-    for (int i = std::min(fromX, toX); i <= std::max(fromX, toX); i++)
+    int x = (toX - fromX == 0) ? 0 : (toX - fromX) / abs(toX - fromX);
+    int y = (toY - fromY == 0) ? 0 : (toY - fromY) / abs(toY - fromY);
+    int max = abs(toX - fromX) > abs(toY - fromY) ? abs(toX - fromX) : abs(toY - fromY);
+    int index;
+    for(int i = 1; i < max; i++)
     {
-        for (int y = std::min(fromY, toY); y <= std::max(fromY, toY); y++)
-            cells.push_back(findByPosition(i, y));
+        index = findByPosition(fromX + i * x, fromY + i * y);
+        if(index >= 0)
+            return true;
     }
-    for (int i = 1; i < cells.size(); i++)
-    {
-        pathSum += cells[i];
-        qDebug() << "pathSum" << pathSum;
-    }
-    qDebug() << "pathSum TOTAL" << pathSum;
-
-    pathSum = (pathSum - figIndex);
-    qDebug() << "pathSum After division: " << pathSum;
-
-    if (pathSum <= 0)
-        return true;
     return false;
 }
 
@@ -92,6 +75,7 @@ bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int to
     case ROOK:
         return(checkRookMove(fromX, fromY, toX, toY));
         break;
+
     default:
         return false;
         break;
@@ -118,9 +102,11 @@ bool::Logic::Impl::checkPawnMove(int color, int fromX, int fromY, int toX, int t
 
 bool::Logic::Impl::checkRookMove(int fromX, int fromY, int toX, int toY)
 {
-    if (abs(fromY - toY) < 1)
+    bool overleap = checkOverleap(fromX, fromY, toX, toY);
+    qDebug() << "checkRookMove: overleap" << overleap;
+    if (abs(fromY - toY) < 1 && !overleap)
         return true;
-    else if (abs(fromX - toX) < 1)
+    else if (abs(fromX - toX) < 1 && !overleap)
         return true;
     return false;
 }
@@ -315,7 +301,7 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     {
         if (impl->figures[index].color == impl->figures[nextIndex].color)
             return false;
-        qDebug() << "attack!";
+        qDebug() << "Attack!";
         impl->figures.removeAt(nextIndex);
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
         endRemoveRows();
