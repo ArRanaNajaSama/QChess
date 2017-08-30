@@ -35,6 +35,7 @@ struct Logic::Impl
     bool checkOverleap(int fromX, int fromY, int toX, int toY);
     bool checkRookMove(int fromX, int fromY, int toX, int toY);
     bool checkKnightMove(int fromX, int fromY, int toX, int toY);
+    bool checkBishopMove(int fromX, int fromY, int toX, int toY);
 };
 
 int Logic::Impl::findByPosition(int x, int y)
@@ -78,6 +79,15 @@ bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int to
         break;
     case KNIGHT:
         return (checkKnightMove(fromX, fromY, toX, toY));
+        break;
+    case BISHOP:
+        return (checkBishopMove(fromX, fromY, toX, toY));
+        break;
+    case QUEEN:
+        return true;
+        break;
+    case KING:
+        return true;
         break;
     default:
         return false;
@@ -124,6 +134,16 @@ bool::Logic::Impl::checkKnightMove(int fromX, int fromY, int toX, int toY)
     if (abs(fromX - toX) == 2 && abs(fromY - toY) == 1)
         return true;
     if (abs(fromX - toX) == 1 && abs(fromY - toY) == 2)
+        return true;
+    return false;
+}
+
+bool::Logic::Impl::checkBishopMove(int fromX, int fromY, int toX, int toY)
+{
+    //The bishop can move any number of squares diagonally,
+    //but cannot leap over other pieces.
+    bool overleap = checkOverleap(fromX, fromY, toX, toY);
+    if(abs(fromX - toX) == abs(fromY - toY) && !overleap)
         return true;
     return false;
 }
@@ -302,11 +322,7 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE)
         return false;
     if ((impl->turn % 2) != impl->figures[index].color)
-    {
-        qDebug() << "(impl->turn % 2)" << (impl->turn % 2);
-        qDebug() << "impl->figures[index].color" << impl->figures[index].color;
         return false;
-    }
     int  nextIndex = impl->findByPosition(toX, toY);
     qDebug() << "nextIndex" << nextIndex;
     if (index == nextIndex)
