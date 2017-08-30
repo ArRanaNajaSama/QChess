@@ -16,17 +16,17 @@ ApplicationWindow
         var imgPath = ""
         switch (color)
         {
-            case 0: imgPath += "/images/white"; break;
-            case 1: imgPath += "/images/black"; break;
+        case 0: imgPath += "/images/white"; break;
+        case 1: imgPath += "/images/black"; break;
         }
         switch (type)
         {
-            case 0: imgPath += "_rook.svg"; break;
-            case 1: imgPath += "_knight.svg"; break;
-            case 2: imgPath += "_bishop.svg"; break;
-            case 3: imgPath += "_queen.svg"; break;
-            case 4: imgPath += "_king.svg"; break;
-            case 5: imgPath += "_pawn.svg"; break;
+        case 0: imgPath += "_rook.svg"; break;
+        case 1: imgPath += "_knight.svg"; break;
+        case 2: imgPath += "_bishop.svg"; break;
+        case 3: imgPath += "_queen.svg"; break;
+        case 4: imgPath += "_king.svg"; break;
+        case 5: imgPath += "_pawn.svg"; break;
         }
         return imgPath
     }
@@ -63,6 +63,7 @@ ApplicationWindow
                 {
                     anchors.fill: parent
                     drag.target: parent
+                    visible: logic.mouse
 
                     property int startX: 0
                     property int startY: 0
@@ -111,7 +112,7 @@ ApplicationWindow
                 game_nav.visible = false
                 stopButton.visible = true
                 saveButton.visible = true
-                game_anouncements.visible = true
+                turn.visible = true
                 console.log("Starting new game...")
             }
         }
@@ -125,7 +126,7 @@ ApplicationWindow
                 logic.loadGame()
                 startButton.visible = true
                 game_nav.visible = true
-                game_anouncements.visible = true
+                turn.visible = true
                 console.log("Loading game...")
             }
         }
@@ -169,7 +170,7 @@ ApplicationWindow
                 loadButton.visible = true
                 stopButton.visible = false
                 saveButton.visible = false
-                game_anouncements.visible = false
+                turn.visible = false
                 console.log("Stoping game... Returning to starting screen")
             }
         }
@@ -185,20 +186,18 @@ ApplicationWindow
             }
         }
 
-        RowLayout
+        Label
         {
-           id: game_anouncements
-           spacing: 5
-           visible: false;
+            id: turn
+            visible: false
+            text: logic.whoseTurn
+        }
 
-           Label
-           {
-               text: logic.whoseTurn
-           }
-           Label
-           {
-               text: qsTr("player it is your turn.")
-           }
+        Label
+        {
+            id: gameOver
+            visible: logic.endGame
+            text: qsTr("GAME OVER")
         }
     }
 }

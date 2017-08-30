@@ -164,9 +164,7 @@ bool::Logic::Impl::checkQueenMove(int fromX, int fromY, int toX, int toY)
 bool::Logic::Impl::checkKingMove(int fromX, int fromY, int toX, int toY)
 {
     //The king moves one square in any direction.
-    if(abs(fromX - toX) < 1 && abs(fromY - toY) == 1)
-        return true;
-    else if(abs(fromY - toY) < 1 && abs(fromX - toX) == 1)
+    if(abs(fromX - toX) <= 1 && abs(fromY - toY) <= 1)
         return true;
     return false;
 }
@@ -192,6 +190,30 @@ void Logic::setWhoseTurn(const QString &a)
     if (a != m_whoseTurn)
         m_whoseTurn = a;
     emit whoseTurnChanged();
+}
+
+bool Logic::getMouse() const
+{
+    return m_mouse;
+}
+
+void Logic::setMouse(const bool &m)
+{
+    if (m != m_mouse)
+        m_mouse = m;
+    emit mouseChanged();
+}
+
+bool Logic::getEndGame() const
+{
+    return m_endGame;
+}
+
+void Logic::setEndGame(const bool &m)
+{
+    if (m != m_endGame)
+        m_endGame = m;
+    emit endGameChanged();
 }
 
 int Logic::rowCount(const QModelIndex & ) const
@@ -241,11 +263,13 @@ void Logic::clear()
     impl->figures.clear();
     impl->steps.clear();
     impl->turn = 0;
+    setEndGame(false);
     endResetModel();
 }
 
 void Logic::startNewGame()
 {
+    setMouse(true);
     beginInsertRows(QModelIndex(), 0, 31);
     for (int i = 0; i < 8; i++)
     {
@@ -269,7 +293,7 @@ void Logic::startNewGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
-    setWhoseTurn("White");
+    setWhoseTurn("White player it is your turn.");
 }
 
 void Logic::loadGame()
@@ -297,7 +321,7 @@ void Logic::loadGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
-    setWhoseTurn("White");
+    setWhoseTurn("White player it is your turn.");
 
     QFile file("out.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -306,12 +330,19 @@ void Logic::loadGame()
         return;
     }
     QTextStream in(&file);
-    //       QString line = in.readLine();
-    //       while (!line.isNull())
-    //       {
-    //           process_line(line);
-    //           line = in.readLine();
-    //       }
+    int fromX;
+    int fromY;
+    int toX;
+    int toY;
+    while (!in.atEnd())
+    {
+        in >> fromX;
+        in >> fromY;
+        in >> toX;
+        in >> toY;
+        impl->steps << Step { fromX, fromY, toX, toY};
+    }
+    file.close();
 }
 
 void Logic::saveGame()
@@ -358,21 +389,37 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
         if (impl->figures[index].color == impl->figures[nextIndex].color)
             return false;
         qDebug() << "Attack!";
+        qDebug() << "impl->figures[nextIndex].type" << impl->figures[nextIndex].type;
+        if (impl->figures[nextIndex].type == KING)
+            gameOver();
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
         impl->figures.removeAt(nextIndex);
         endRemoveRows();
-        index = impl->findByPosition(fromX, fromY);
+        if(nextIndex < index)
+            --index;
     }
     impl->steps << Step {fromX, fromY, toX, toY};
     impl->turn++;
-    if(impl->turn % 2)
-        setWhoseTurn("Black");
-    else
-        setWhoseTurn("White");
+    setPlayerTurn();
     impl->figures[index].x = toX;
     impl->figures[index].y = toY;
     QModelIndex topLeft = createIndex(index, 0);
     QModelIndex bottomRight = createIndex(index, 0);
     emit dataChanged(topLeft, bottomRight);
     return true;
+}
+
+void Logic::setPlayerTurn()
+{
+    if(impl->turn % 2)
+        setWhoseTurn("Black player it is your turn.");
+    else
+        setWhoseTurn("White player it is your turn.");
+}
+
+void Logic::gameOver()
+{
+    qDebug() << "Hello! I am gameOver()";
+    setMouse(false);
+    setEndGame(true);
 }
