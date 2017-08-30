@@ -41,13 +41,20 @@ public:
     ~Logic();
 
     Q_PROPERTY(int boardSize READ boardSize CONSTANT)
+    Q_PROPERTY(QString whoseTurn READ getWhoseTurn WRITE setWhoseTurn NOTIFY whoseTurnChanged)
+
     int boardSize() const;
+    QString getWhoseTurn() const;
+    void setWhoseTurn(const QString &a);
 
     Q_INVOKABLE void clear();
     Q_INVOKABLE void startNewGame();
     Q_INVOKABLE void loadGame();
     Q_INVOKABLE void saveGame();
     Q_INVOKABLE bool move(int fromX, int fromY, int toX, int toY);
+
+signals:
+   void whoseTurnChanged();
 
 protected:
     int rowCount(const QModelIndex & parent) const override;
@@ -57,4 +64,5 @@ protected:
 private:
     struct Impl;
     std::unique_ptr<Impl> impl;
+    QString m_whoseTurn;
 };

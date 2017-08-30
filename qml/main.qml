@@ -111,6 +111,7 @@ ApplicationWindow
                 game_nav.visible = false
                 stopButton.visible = true
                 saveButton.visible = true
+                game_anouncements.visible = true
                 console.log("Starting new game...")
             }
         }
@@ -124,6 +125,7 @@ ApplicationWindow
                 logic.loadGame()
                 startButton.visible = true
                 game_nav.visible = true
+                game_anouncements.visible = true
                 console.log("Loading game...")
             }
         }
@@ -167,6 +169,7 @@ ApplicationWindow
                 loadButton.visible = true
                 stopButton.visible = false
                 saveButton.visible = false
+                game_anouncements.visible = false
                 console.log("Stoping game... Returning to starting screen")
             }
         }
@@ -180,6 +183,22 @@ ApplicationWindow
                 logic.saveGame()
                 console.log("Saving game...")
             }
+        }
+
+        RowLayout
+        {
+           id: game_anouncements
+           spacing: 5
+           visible: false;
+
+           Label
+           {
+               text: logic.whoseTurn
+           }
+           Label
+           {
+               text: qsTr("player it is your turn.")
+           }
         }
     }
 }

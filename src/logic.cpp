@@ -32,6 +32,8 @@ struct Logic::Impl
     int turn = 0;
     bool checkMove(Figure figure,int fromX, int fromY, int toX, int toY);
     bool checkPawnMove(int color, int fromX, int fromY, int toX, int toY);
+    bool checkOverleap(int fromX, int fromY, int toX, int toY);
+    bool checkRookMove(int fromX, int fromY, int toX, int toY);
 };
 
 int Logic::Impl::findByPosition(int x, int y)
@@ -47,16 +49,48 @@ int Logic::Impl::findByPosition(int x, int y)
     return -1;
 }
 
+bool::Logic::Impl::checkOverleap(int fromX, int fromY, int toX, int toY)
+{
+    int stepX = abs(fromX - toX);
+    int stepY = abs(fromY - toY);
+    int figIndex = findByPosition(fromX, fromY);
+
+    qDebug() << "stepX" << stepX << ">" << "stepY" << stepY;
+    qDebug() << "figIndex" << figIndex;
+
+    int pathSum = 0;
+    QVector<int> cells;
+
+    for (int i = std::min(fromX, toX); i <= std::max(fromX, toX); i++)
+    {
+        for (int y = std::min(fromY, toY); y <= std::max(fromY, toY); y++)
+            cells.push_back(findByPosition(i, y));
+    }
+    for (int i = 1; i < cells.size(); i++)
+    {
+        pathSum += cells[i];
+        qDebug() << "pathSum" << pathSum;
+    }
+    qDebug() << "pathSum TOTAL" << pathSum;
+
+    pathSum = (pathSum - figIndex);
+    qDebug() << "pathSum After division: " << pathSum;
+
+    if (pathSum <= 0)
+        return true;
+    return false;
+}
+
 bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int toY)
 {
     qDebug() << "checkMove: Current figure" << figure.type;
     switch (figure.type)
     {
     case PAWN:
-        qDebug() << checkPawnMove(figure.color, fromX, fromY, toX, toY);
         return(checkPawnMove(figure.color, fromX, fromY, toX, toY));
         break;
     case ROOK:
+        return(checkRookMove(fromX, fromY, toX, toY));
         break;
     default:
         return false;
@@ -82,6 +116,15 @@ bool::Logic::Impl::checkPawnMove(int color, int fromX, int fromY, int toX, int t
     return false;
 }
 
+bool::Logic::Impl::checkRookMove(int fromX, int fromY, int toX, int toY)
+{
+    if (abs(fromY - toY) < 1)
+        return true;
+    else if (abs(fromX - toX) < 1)
+        return true;
+    return false;
+}
+
 Logic::Logic(QObject *parent):QAbstractListModel(parent), impl(new Impl())
 {}
 
@@ -91,6 +134,18 @@ Logic::~Logic()
 int Logic::boardSize() const
 {
     return BOARD_SIZE;
+}
+
+QString Logic::getWhoseTurn() const
+{
+    return m_whoseTurn;
+}
+
+void Logic::setWhoseTurn(const QString &a)
+{
+    if (a != m_whoseTurn)
+        m_whoseTurn = a;
+    emit whoseTurnChanged();
 }
 
 int Logic::rowCount(const QModelIndex & ) const
@@ -168,6 +223,7 @@ void Logic::startNewGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
+    setWhoseTurn("White");
 }
 
 void Logic::loadGame()
@@ -195,6 +251,7 @@ void Logic::loadGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
+    setWhoseTurn("White");
 
     QFile file("out.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -230,15 +287,16 @@ void Logic::saveGame()
 
 bool Logic::move(int fromX, int fromY, int toX, int toY)
 {
+    qDebug() << "NEW move";
     qDebug() << "fromX" << fromX;
     qDebug() << "fromY" << fromY;
     qDebug() << "toX" << toX;
     qDebug() << "toY" << toY;
     int index = impl->findByPosition(fromX, fromY);
     qDebug() << "Index" << index;
-    qDebug() << "Current figure" << impl->figures[index].type;
     if (index < 0)
         return false;
+    qDebug() << "Current figure" << impl->figures[index].type;
     if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE)
         return false;
     if ((impl->turn % 2) != impl->figures[index].color)
@@ -254,19 +312,19 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     qDebug() << "moveAvailible" << moveAvailible;
     if (nextIndex >= 0)
     {
-        if (impl->figures[index].color == impl->figures[nextIndex].color)
-            return false;
         qDebug() << "attack!";
         impl->figures.removeAt(nextIndex);
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
         endRemoveRows();
-        if (nextIndex < index)
-        {
-            --index;
-        }
+        index = impl->findByPosition(fromX, fromY);
     }
     impl->steps << Step {fromX, fromY, toX, toY};
     impl->turn++;
+    qDebug() << "(impl->turn % 2)" << (impl->turn % 2);
+    if(impl->turn % 2)
+        setWhoseTurn("Black");
+    else
+        setWhoseTurn("White");
     impl->figures[index].x = toX;
     impl->figures[index].y = toY;
     QModelIndex topLeft = createIndex(index, 0);
