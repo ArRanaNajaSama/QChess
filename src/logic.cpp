@@ -296,13 +296,14 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     qDebug() << "Index" << index;
     if (index < 0)
         return false;
-    qDebug() << "Current figure" << impl->figures[index].type;
     if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE)
         return false;
     if ((impl->turn % 2) != impl->figures[index].color)
         return false;
     int  nextIndex = impl->findByPosition(toX, toY);
     qDebug() << "nextIndex" << nextIndex;
+    if (index == nextIndex)
+        return false;
     bool moveAvailible = impl->checkMove(impl->figures[index], fromX, fromY, toX, toY);
     if (!moveAvailible)
     {
@@ -310,8 +311,10 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
         return false;
     }
     qDebug() << "moveAvailible" << moveAvailible;
-    if (nextIndex >= 0)
+    if (nextIndex >= 0 && moveAvailible)
     {
+        if (impl->figures[index].color == impl->figures[nextIndex].color)
+            return false;
         qDebug() << "attack!";
         impl->figures.removeAt(nextIndex);
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
@@ -320,7 +323,6 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     }
     impl->steps << Step {fromX, fromY, toX, toY};
     impl->turn++;
-    qDebug() << "(impl->turn % 2)" << (impl->turn % 2);
     if(impl->turn % 2)
         setWhoseTurn("Black");
     else
