@@ -36,6 +36,8 @@ struct Logic::Impl
     bool checkRookMove(int fromX, int fromY, int toX, int toY);
     bool checkKnightMove(int fromX, int fromY, int toX, int toY);
     bool checkBishopMove(int fromX, int fromY, int toX, int toY);
+    bool checkQueenMove(int fromX, int fromY, int toX, int toY);
+    bool checkKingMove(int fromX, int fromY, int toX, int toY);
 };
 
 int Logic::Impl::findByPosition(int x, int y)
@@ -84,7 +86,7 @@ bool::Logic::Impl::checkMove(Figure figure,int fromX, int fromY, int toX, int to
         return (checkBishopMove(fromX, fromY, toX, toY));
         break;
     case QUEEN:
-        return true;
+        return (checkQueenMove(fromX, fromY, toX, toY));
         break;
     case KING:
         return true;
@@ -116,7 +118,6 @@ bool::Logic::Impl::checkPawnMove(int color, int fromX, int fromY, int toX, int t
 bool::Logic::Impl::checkRookMove(int fromX, int fromY, int toX, int toY)
 {
     bool overleap = checkOverleap(fromX, fromY, toX, toY);
-    qDebug() << "checkRookMove: overleap" << overleap;
     if (abs(fromY - toY) < 1 && !overleap)
         return true;
     else if (abs(fromX - toX) < 1 && !overleap)
@@ -144,6 +145,19 @@ bool::Logic::Impl::checkBishopMove(int fromX, int fromY, int toX, int toY)
     //but cannot leap over other pieces.
     bool overleap = checkOverleap(fromX, fromY, toX, toY);
     if(abs(fromX - toX) == abs(fromY - toY) && !overleap)
+        return true;
+    return false;
+}
+
+bool::Logic::Impl::checkQueenMove(int fromX, int fromY, int toX, int toY)
+{
+    bool overleap = checkOverleap(fromX, fromY, toX, toY);
+    //Queen's diagonal move
+    if(abs(fromX - toX) == abs(fromY - toY) && !overleap)
+        return true;
+    else if (abs(fromY - toY) < 1 && !overleap) // Horizontal move
+        return true;
+    else if (abs(fromX - toX) < 1 && !overleap) // Vertical move
         return true;
     return false;
 }
@@ -311,10 +325,6 @@ void Logic::saveGame()
 bool Logic::move(int fromX, int fromY, int toX, int toY)
 {
     qDebug() << "NEW move";
-    qDebug() << "fromX" << fromX;
-    qDebug() << "fromY" << fromY;
-    qDebug() << "toX" << toX;
-    qDebug() << "toY" << toY;
     int index = impl->findByPosition(fromX, fromY);
     qDebug() << "Index" << index;
     if (index < 0)
