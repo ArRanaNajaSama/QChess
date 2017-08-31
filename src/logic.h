@@ -58,6 +58,7 @@ public:
     Q_INVOKABLE void loadGame();
     Q_INVOKABLE void saveGame();
     Q_INVOKABLE void nextMove();
+    Q_INVOKABLE void prevMove();
     Q_INVOKABLE bool move(int fromX, int fromY, int toX, int toY);
 
     void changePosition(int fromX, int fromY, int toX, int toY);

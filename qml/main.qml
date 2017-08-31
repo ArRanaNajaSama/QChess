@@ -142,7 +142,7 @@ ApplicationWindow
                 text: qsTr("Previous")
                 onClicked:
                 {
-                    //logic.loadGame()
+                    logic.prevMove()
                     console.log("Previous move...")
                 }
             }

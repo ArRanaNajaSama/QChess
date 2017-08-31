@@ -6,8 +6,9 @@
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
+#include <QStack>
 
-struct Figure
+struct  Figure
 {
     Logic::FigureColor color;
     Logic::FigureType type;
@@ -15,7 +16,7 @@ struct Figure
     int y;
 };
 
-struct Step
+struct  Step
 {
     int fromX;
     int fromY;
@@ -23,9 +24,16 @@ struct Step
     int toY;
 };
 
-struct Logic::Impl
+struct  Capture
+{
+    Figure figure;
+    int turn;
+};
+
+struct  Logic::Impl
 {
     QList<Figure> figures;
+    QStack<Capture> captures;
     QVector<Step> steps;
 
     int findByPosition(int x, int y);
@@ -185,36 +193,37 @@ QString Logic::getWhoseTurn() const
     return m_whoseTurn;
 }
 
-void Logic::setWhoseTurn(const QString &a)
+void    Logic::setWhoseTurn(const QString &a)
 {
     if (a != m_whoseTurn)
         m_whoseTurn = a;
     emit whoseTurnChanged();
 }
 
-bool Logic::getMouse() const
+bool    Logic::getMouse() const
 {
     return m_mouse;
 }
 
-void Logic::setMouse(const bool &m)
+void    Logic::setMouse(const bool &m)
 {
     if (m != m_mouse)
         m_mouse = m;
     emit mouseChanged();
 }
 
-bool Logic::getEndGame() const
+bool    Logic::getEndGame() const
 {
     return m_endGame;
 }
 
-void Logic::setEndGame(const bool &m)
+void    Logic::setEndGame(const bool &m)
 {
     if (m != m_endGame)
         m_endGame = m;
     emit endGameChanged();
 }
+
 
 int Logic::rowCount(const QModelIndex & ) const
 {
@@ -342,7 +351,7 @@ void Logic::loadGame()
         in >> fromY;
         in >> toX;
         in >> toY;
-        impl->steps << Step{ fromX, fromY, toX, toY};
+        impl->steps << Step{fromX, fromY, toX, toY};
     }
     file.close();
 }
@@ -369,6 +378,26 @@ void Logic::nextMove()
     if(impl->turn >= (impl->steps.size() - 1))
         return ;
     changePosition(impl->steps[impl->turn].fromX,impl->steps[impl->turn].fromY,impl->steps[impl->turn].toX,impl->steps[impl->turn].toY);
+    impl->turn++;
+}
+
+void Logic::prevMove()
+{
+    setEndGame(false);
+    if(impl->turn > 0)
+    {
+        if(impl->captures.size() > 0)
+        {
+            if(impl->captures[(impl->captures.size() - 1)].turn == (impl->turn - 1))
+            {
+                beginInsertRows(QModelIndex(), impl->figures.size(), impl->figures.size());
+                impl->figures << impl->captures.pop().figure;
+                endInsertRows();
+            }
+        }
+        changePosition(impl->steps[impl->turn - 1].toX, impl->steps[impl->turn - 1].toY,impl->steps[impl->turn - 1].fromX, impl->steps[impl->turn - 1].fromY);
+        impl->turn--;
+    }
 }
 
 bool Logic::move(int fromX, int fromY, int toX, int toY)
@@ -389,12 +418,11 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
         qDebug() << "Unavailible move! Try again.";
         return false;
     }
-    qDebug() << "moveAvailible" << moveAvailible;
-    if (nextIndex >= 0 && moveAvailible)
+    if (nextIndex >= 0 && moveAvailible) // Capture figures
     {
         if (impl->figures[index].color == impl->figures[nextIndex].color)
             return false;
-        qDebug() << "Attack!";
+        impl->captures.push(Capture{impl->figures[nextIndex], impl->turn});
         if (impl->figures[nextIndex].type == KING)
             gameOver();
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
@@ -420,14 +448,13 @@ void Logic::changePosition(int fromX, int fromY, int toX, int toY)
     int nextIndex = impl->findByPosition(toX, toY);
     if (nextIndex >= 0)
     {
-        qDebug() << "Attack!";
+        impl->captures.push(Capture{impl->figures[nextIndex], impl->turn});
         if (impl->figures[nextIndex].type == KING)
             gameOver();
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
         impl->figures.removeAt(nextIndex);
         endRemoveRows();
     }
-    impl->turn++;
     setPlayerTurn();
     impl->figures[index].x = toX;
     impl->figures[index].y = toY;
@@ -446,7 +473,6 @@ void Logic::setPlayerTurn()
 
 void Logic::gameOver()
 {
-    qDebug() << "Hello! I am gameOver()";
     setMouse(false);
     setEndGame(true);
 }
