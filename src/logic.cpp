@@ -303,7 +303,7 @@ void Logic::startNewGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
-    setWhoseTurn("White player it is your turn.");
+    setPlayerTurn();
 }
 
 void Logic::loadGame()
@@ -332,7 +332,7 @@ void Logic::loadGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
-    setWhoseTurn("White player it is your turn.");
+    setPlayerTurn();
 
     QFile file("out.txt");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
