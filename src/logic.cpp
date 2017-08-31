@@ -224,6 +224,18 @@ void    Logic::setEndGame(const bool &m)
     emit endGameChanged();
 }
 
+bool Logic::getTurnAnnoun() const
+{
+    return m_turnAnnoun;
+}
+
+void Logic::setTurnAnnoun(const bool &m)
+{
+    if (m != m_turnAnnoun)
+        m_turnAnnoun = m;
+    emit turnAnnounChanged();
+}
+
 
 int Logic::rowCount(const QModelIndex & ) const
 {
@@ -274,6 +286,7 @@ void Logic::clear()
     impl->steps.clear();
     impl->turn = 0;
     setMouse(false);
+    setTurnAnnoun(false);
 }
 
 void Logic::startNewGame()
@@ -303,6 +316,7 @@ void Logic::startNewGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
+    setTurnAnnoun(true);
     setPlayerTurn();
 }
 
@@ -332,6 +346,7 @@ void Logic::loadGame()
     impl->figures << Figure{BLACK, KNIGHT, 6, 7};
     impl->figures << Figure{BLACK, ROOK, 7, 7};
     endInsertRows();
+    setTurnAnnoun(true);
     setPlayerTurn();
 
     QFile file("out.txt");
@@ -473,6 +488,7 @@ void Logic::setPlayerTurn()
 
 void Logic::gameOver()
 {
+    setTurnAnnoun(false);
     setMouse(false);
     setEndGame(true);
 }

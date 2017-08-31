@@ -189,8 +189,9 @@ ApplicationWindow
         Label
         {
             id: turn
-            visible: false
+            visible: logic.turnAnnoun
             text: logic.whoseTurn
+            font.pixelSize: 14
         }
 
         Label
@@ -198,6 +199,8 @@ ApplicationWindow
             id: gameOver
             visible: logic.endGame
             text: qsTr("GAME OVER")
+            font.pixelSize: 22
+            color: "red"
         }
     }
 }

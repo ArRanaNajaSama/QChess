@@ -44,6 +44,7 @@ public:
     Q_PROPERTY(QString whoseTurn READ getWhoseTurn WRITE setWhoseTurn NOTIFY whoseTurnChanged)
     Q_PROPERTY(bool mouse READ getMouse WRITE setMouse NOTIFY mouseChanged)
     Q_PROPERTY(bool endGame READ getEndGame WRITE setEndGame NOTIFY endGameChanged)
+    Q_PROPERTY(bool turnAnnoun READ getTurnAnnoun WRITE setTurnAnnoun NOTIFY turnAnnounChanged)
 
     int boardSize() const;
     QString getWhoseTurn() const;
@@ -52,6 +53,8 @@ public:
     void setMouse(const bool &m);
     bool getEndGame() const;
     void setEndGame(const bool &m);
+    bool getTurnAnnoun() const;
+    void setTurnAnnoun(const bool &m);
 
     Q_INVOKABLE void clear();
     Q_INVOKABLE void startNewGame();
@@ -69,6 +72,7 @@ signals:
     void whoseTurnChanged();
     void mouseChanged();
     void endGameChanged();
+    void turnAnnounChanged();
 
 protected:
     int rowCount(const QModelIndex & parent) const override;
@@ -81,4 +85,5 @@ private:
     QString m_whoseTurn;
     bool m_endGame = false;
     bool m_mouse = false;
+    bool m_turnAnnoun = false;
 };
