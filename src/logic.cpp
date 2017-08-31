@@ -270,10 +270,10 @@ void Logic::clear()
 {
     beginResetModel();
     impl->figures.clear();
+    endResetModel();
     impl->steps.clear();
     impl->turn = 0;
-    setEndGame(false);
-    endResetModel();
+    setMouse(false);
 }
 
 void Logic::startNewGame()
@@ -308,7 +308,7 @@ void Logic::startNewGame()
 
 void Logic::loadGame()
 {
-    setMouse(false);
+    clear();
     beginInsertRows(QModelIndex(), 0, 31);
     for (int i = 0; i < 8; i++)
     {
