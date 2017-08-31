@@ -269,6 +269,7 @@ void Logic::clear()
 
 void Logic::startNewGame()
 {
+    clear();
     setMouse(true);
     beginInsertRows(QModelIndex(), 0, 31);
     for (int i = 0; i < 8; i++)
@@ -298,6 +299,7 @@ void Logic::startNewGame()
 
 void Logic::loadGame()
 {
+    setMouse(false);
     beginInsertRows(QModelIndex(), 0, 31);
     for (int i = 0; i < 8; i++)
     {
@@ -340,7 +342,7 @@ void Logic::loadGame()
         in >> fromY;
         in >> toX;
         in >> toY;
-        impl->steps << Step { fromX, fromY, toX, toY};
+        impl->steps << Step{ fromX, fromY, toX, toY};
     }
     file.close();
 }
@@ -362,11 +364,16 @@ void Logic::saveGame()
     file.close();
 }
 
+void Logic::nextMove()
+{
+    if(impl->turn >= (impl->steps.size() - 1))
+        return ;
+    changePosition(impl->steps[impl->turn].fromX,impl->steps[impl->turn].fromY,impl->steps[impl->turn].toX,impl->steps[impl->turn].toY);
+}
+
 bool Logic::move(int fromX, int fromY, int toX, int toY)
 {
-    qDebug() << "NEW move";
     int index = impl->findByPosition(fromX, fromY);
-    qDebug() << "Index" << index;
     if (index < 0)
         return false;
     if (toX < 0 || toX >= BOARD_SIZE || toY < 0 || toY >= BOARD_SIZE)
@@ -374,7 +381,6 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     if ((impl->turn % 2) != impl->figures[index].color)
         return false;
     int  nextIndex = impl->findByPosition(toX, toY);
-    qDebug() << "nextIndex" << nextIndex;
     if (index == nextIndex)
         return false;
     bool moveAvailible = impl->checkMove(impl->figures[index], fromX, fromY, toX, toY);
@@ -389,7 +395,6 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
         if (impl->figures[index].color == impl->figures[nextIndex].color)
             return false;
         qDebug() << "Attack!";
-        qDebug() << "impl->figures[nextIndex].type" << impl->figures[nextIndex].type;
         if (impl->figures[nextIndex].type == KING)
             gameOver();
         beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
@@ -398,7 +403,7 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
         if(nextIndex < index)
             --index;
     }
-    impl->steps << Step {fromX, fromY, toX, toY};
+    impl->steps << Step{fromX, fromY, toX, toY};
     impl->turn++;
     setPlayerTurn();
     impl->figures[index].x = toX;
@@ -407,6 +412,28 @@ bool Logic::move(int fromX, int fromY, int toX, int toY)
     QModelIndex bottomRight = createIndex(index, 0);
     emit dataChanged(topLeft, bottomRight);
     return true;
+}
+
+void Logic::changePosition(int fromX, int fromY, int toX, int toY)
+{
+    int index = impl->findByPosition(fromX, fromY);
+    int nextIndex = impl->findByPosition(toX, toY);
+    if (nextIndex >= 0)
+    {
+        qDebug() << "Attack!";
+        if (impl->figures[nextIndex].type == KING)
+            gameOver();
+        beginRemoveRows(QModelIndex(), nextIndex, nextIndex);
+        impl->figures.removeAt(nextIndex);
+        endRemoveRows();
+    }
+    impl->turn++;
+    setPlayerTurn();
+    impl->figures[index].x = toX;
+    impl->figures[index].y = toY;
+    QModelIndex topLeft = createIndex(index, 0);
+    QModelIndex bottomRight = createIndex(index, 0);
+    emit dataChanged(topLeft, bottomRight);
 }
 
 void Logic::setPlayerTurn()

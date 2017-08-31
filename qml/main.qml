@@ -152,7 +152,7 @@ ApplicationWindow
                 text: qsTr("Next")
                 onClicked:
                 {
-                    //logic.loadGame()
+                    logic.nextMove()
                     startButton.visible = true;
                     console.log("Next move...")
                 }
